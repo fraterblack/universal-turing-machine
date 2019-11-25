@@ -5,9 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Universal Turing Machine</title>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 </head>
 <body>
-    <h1>Works!!!</h1>
+    <div class="utm-container">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col col-lg-3 col-md-4 col-xs-6">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                    <label for="initialSymbol">Símbolo Inicial</label>
+                                    <input id="initialSymbol"
+                                        type="text"
+                                        maxlength="1"
+                                        class="form-control utm-initial-symbol">
+                            </div>
+                            <div class="col">
+                                    <label for="stopSymbol">Símbolo Parada</label>
+                                    <input id="stopSymbol"
+                                        type="text"
+                                        maxlength="1"
+                                        class="form-control utm-stop-symbol">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsEditor" class="utm-states-table-label">Tabela de Estados 
+                            <button id="btnImport" type="button" class="btn btn-link btn-sm utm-btn-open-file"><i class="fa fa-file" aria-hidden="true"></i> Importar</button>
+                        </label>
+                        <textarea class="form-control utm-states-table-editor"
+                            id="settingsEditor"
+                            rows="3"></textarea>
+                            <small id="settingsEditorHelpText" class="form-text text-muted"></small>
+                    </div>
+                </div>
+                <div class="col col-lg-9 col-md-8 col-xs-6">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <label for="initialState">Configuração Inicial</label>
+                                <input class="form-control utm-initial-state"
+                                    type="text"
+                                    id="initialState"></input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="utm-tape-container">
+                        <ul id="tape" class="utm-tape"></ul>
+                    </div>
+
+                    <div class="form-group utm-actions-container">
+                        <div class="row">
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-primary">Iniciar</button>
+                                <button type="button" class="btn btn-secondary">Pausar</button>
+                            </div>
+                            <div class="col-auto">
+                                <label for="delay" class="utm-delay-label">Delay</label>
+                            </div>
+                            <div class="col-auto">
+                                <input id="delay" type="number" class="form-control form-control-sm utm-delay">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="app.js" type="text/javascript"></script>
 </body>
 </html>
