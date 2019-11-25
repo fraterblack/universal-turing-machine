@@ -1,15 +1,18 @@
 import './styles/app.scss';
 import 'bootstrap';
 
-export enum ReservedChar {
-    WHITE_SPACE = '_',
-    RIGHT_DIRECTION = 'D',
-    LEFT_DIRECTION = 'E'
-}
+import { ReservedChar } from './common';
+import { Handler } from './handler';
+import { Interpreter } from './interpreter';
+import { Validator } from './validator';
 
 export class Utm {
     id: number;
     name: string;
+
+    private interpreter: Interpreter;
+    private handler: Handler;
+    private validator: Validator;
     
     private settingsEditor = document.getElementById('settingsEditor');
     private initialSymbolEditor = document.getElementById('initialSymbol');
@@ -17,6 +20,8 @@ export class Utm {
     private initialStateEditor = document.getElementById('initialState');
     private delayEditor = document.getElementById('delay');
     private btnImport = document.getElementById('btnImport');
+    private btnStart = document.getElementById('btnStart');
+    private btnPause = document.getElementById('btnPause');
     private tape = document.getElementById('tape');
 
     private initialSymbol = '>';
@@ -26,6 +31,10 @@ export class Utm {
     private delay = 200;
 
     constructor() {
+        this.handler = new Handler();
+        this.validator = new Validator();
+        this.interpreter = new Interpreter();
+        
         // Set default values
         this.settingsEditor.textContent = this.settings = `q0, ${this.initialSymbol}`;
         this.initialSymbolEditor.setAttribute('value', this.initialSymbol);
@@ -41,6 +50,8 @@ export class Utm {
         this.initialStateEditor.addEventListener('change', this.onInitialStateChange.bind(this));
         this.delayEditor.addEventListener('change', this.onDelayChange.bind(this));
         this.btnImport.addEventListener('click', this.onBtnImportClick.bind(this));
+        this.btnStart.addEventListener('click', this.onBtnStartClick.bind(this));
+        this.btnPause.addEventListener('click', this.onBtnPauseClick.bind(this));
 
         // Help Text
         document.getElementById('settingsEditorHelpText').innerHTML = `Caracteres reservados:<br>
@@ -54,9 +65,9 @@ export class Utm {
     private onSettingsChange(event: Event): void {
         try {
             // Validate if state is valid
-            this.validateSettings(event.currentTarget['value']);
+            this.validator.validateSettings(event.currentTarget['value'], this.initialSymbol, this.stopSymbol);
 
-            this.settings = this.settingsEditor['value'] = this.sanitizeSettings(event.currentTarget['value']);
+            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(event.currentTarget['value']);
         } catch(err) {
             this.settings = event.currentTarget['value'];
 
@@ -67,9 +78,11 @@ export class Utm {
     private onInitialSymbolChange(event: Event): void {
         try {
             // Validate if initial symbol is valid
-            this.validateInitialSymbol(event.currentTarget['value']);
+            this.validator.validateInitialSymbol(event.currentTarget['value'], this.settings, this.initialSymbol);
 
-            this.changeSymbol(this.initialSymbol, event.currentTarget['value']);
+            const newSettings = this.handler.changeSymbol(this.settings, this.initialSymbol, event.currentTarget['value']);
+
+            this.settingsEditor['value'] = this.settings = newSettings;
             
             this.initialSymbol = event.currentTarget['value'];
         } catch(err) {
@@ -83,10 +96,12 @@ export class Utm {
     private onStopSymbolChange(event: Event): void {
         try {
             // Validate if stop symbol is valid
-            this.validateStopSymbol(event.currentTarget['value']);
+            this.validator.validateStopSymbol(event.currentTarget['value'], this.settings, this.stopSymbol);
 
-            this.changeSymbol(this.stopSymbol, event.currentTarget['value']);
+            const newSettings = this.handler.changeSymbol(this.settings, this.stopSymbol, event.currentTarget['value']);
 
+            this.settingsEditor['value'] = this.settings = newSettings;
+            
             this.stopSymbol = event.currentTarget['value'];
         } catch(err) {
             // Rollback value
@@ -111,14 +126,27 @@ export class Utm {
     private setFileContent(content: any) {
         try {
             // Validate if state is valid
-            this.validateSettings(content);
+            this.validator.validateSettings(content, this.initialSymbol, this.stopSymbol);
 
-            this.settings = this.settingsEditor['value'] = this.sanitizeSettings(content);
+            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(content);
         } catch(err) {
             this.settings = this.settingsEditor['value'] = content;
 
             this.bubbleError(err);
         }
+    }
+
+    private onBtnStartClick(event: Event): void {
+        try {
+            // Validate if state is valid
+            this.validator.validateSettings(this.settings, this.initialSymbol, this.stopSymbol);
+        } catch(err) {
+            this.bubbleError(err);
+        }
+    }
+
+    private onBtnPauseClick(event: Event): void {
+        
     }
 
     private populateTape(initialState: string) {
@@ -131,172 +159,6 @@ export class Utm {
             li.appendChild(document.createTextNode(x));
             this.tape.appendChild(li);
         });
-    }
-
-    private sanitizeSettings(settings: string): string {
-        const settingLines = this.getSettingLines(settings);
-
-        return settingLines
-            .filter(x => {
-                const settingItems = this.getSettingItems(x);
-
-                // Remove empty lines
-                if (settingItems.length === 0 || settingItems[0] === '') {
-                    return false;
-                }
-
-                return true;
-            })
-            .map((x, i) => {
-                return this.getSettingItems(x).map(y => {
-                    if (y === '' || y === undefined) {
-                        y = ReservedChar.WHITE_SPACE;
-                    }
-
-                    return y;
-                }).join(', ');
-            })
-            .join('\n')
-    }
-
-    private validateSettings(settings: string): boolean {
-        const settingLines = this.getSettingLines(settings);
-
-        settingLines.forEach((x, i) => {
-            const settingItems = this.getSettingItems(x);
-            let expectedSymbolElements = 5;
-
-            // Not consider empty lines
-            if (settingItems.length === 0 || settingItems[0] === '') {
-                return;
-            }
-            
-            // Line that recognize stop symbol
-            if (i !== 0 && settingItems[1] === this.stopSymbol) {
-                expectedSymbolElements = 2;
-            }
-
-            // Validate total of symbols
-            if (settingItems.length < expectedSymbolElements) {
-                throw `A linha ${i+1} possui menos símbolos que o esperado (${expectedSymbolElements})`
-            }
-
-            if (settingItems.length > expectedSymbolElements) {
-                throw `A linha ${i+1} possui mais símbolos que o esperado (${expectedSymbolElements})`
-            }
-
-            // Validate if the direction symbol is valid
-            if (settingItems[1] !== this.stopSymbol && settingItems[3] !== ReservedChar.LEFT_DIRECTION && settingItems[3] !== ReservedChar.RIGHT_DIRECTION) {
-                throw `A linha ${i+1} não possui um símbolo de mudança de direção válido. É esperado E ou D` 
-            }
-
-            // Validate initial symbol
-            if (i === 0 && settingItems[1] !== this.initialSymbol) {
-                throw `Você precisa obrigatoriamente reconher o símbolo inicial na primeira linha. É esperado: ${settingItems[0]}, ${this.initialSymbol}, ${settingItems[2]}, ${settingItems[3]}, ${settingItems[4]}`
-            }
-        });
-
-        return true;
-    }
-
-    private validateStopSymbol(symbol: string): boolean {
-        if (symbol === '' || symbol === null || symbol === undefined) {
-            throw 'Símbolo inicial não pode ser vazio'
-        }
-        
-        if (this.isReservedChar(symbol)) {
-            throw `"${symbol}" é um caracter reservado`
-        }
-        
-        if (this.stopSymbol === symbol) {
-            return true;
-        }
-
-        const settingLines = this.getSettingLines(this.settings);
-
-        const isUnused = !settingLines.some(x => {
-            const settingItems = this.getSettingItems(x);
-    
-            return settingItems.some(y => y === symbol);
-        });
-
-        if (!isUnused) {
-            throw 'Símbolo final já está sendo usado em outro lugar na tabela de estados'
-        }
-
-        return true;
-    }
-
-    private validateInitialSymbol(symbol: string): boolean {
-        if (symbol === '' || symbol === null || symbol === undefined) {
-            throw 'Símbolo inicial não pode ser vazio'
-        }
-
-        if (this.isReservedChar(symbol)) {
-            throw `"${symbol}" é um caracter reservado`
-        }
-
-        if (this.initialSymbol === symbol) {
-            return true;
-        }
-
-        const settingLines = this.getSettingLines(this.settings);
-
-        const isUnused = !settingLines.some(x => {
-            const settingItems = this.getSettingItems(x);
-    
-            return settingItems.some(y => y === symbol);
-        });
-
-        if (!isUnused) {
-            throw 'Símbolo inicial já está sendo usado em outro lugar na tabela de estados'
-        }
-
-        return true;
-    }
-
-    private changeSymbol(targetSymbol: string, symbol: string): void {
-        const lines = this.getSettingLines(this.settings);
-
-        const mappedLines = lines.map(x => {
-            const settingItems = this.getSettingItems(x);
-
-           return settingItems.map((y, i) => {
-                // Skip position 0, equivalent to state identifier
-                if (i !== 0) {
-                    y = y.replace(targetSymbol, symbol);
-                }
-                
-                return y;
-            }).join(', ');
-        });
-
-        this.settingsEditor['value'] = this.settings = mappedLines.join('\n');
-    }
-
-    private getSettingLines(settings: string): string[] {
-        return settings.split('\n');
-    }
-
-    private getSettingItems(lineSettings: string): string[] {
-        const items = [];
-
-        const re = /\s*,\s*/;
-        lineSettings.split(re).forEach(y => items.push(y ? y.trim() : ''));
-
-        return items;
-    }
-
-    private isReservedChar(char: string): boolean {
-        switch(char) {
-            case ReservedChar.WHITE_SPACE:
-            case ReservedChar.LEFT_DIRECTION:
-            case ReservedChar.RIGHT_DIRECTION:
-                return true;
-
-            default:
-                return false;
-        }
     }
 
     private bubbleError(message: string) {
