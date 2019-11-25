@@ -7,6 +7,13 @@ body {
     background: #f1f1f1;
 }
 
+.form-control[readonly] {
+    background: #f7f7f7;
+    cursor: not-allowed;
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
 .utm {
     &-container {
         padding: 30px 20px 0;
@@ -64,6 +71,10 @@ body {
             border: 1px solid #ccc;
             background: #fff;
 
+            &.utm-active {
+                background: #ff0;
+            }
+
             &:first-child:before,
             &:last-child:after {
                 content: '';
@@ -85,6 +96,21 @@ body {
                 right: -($tapeItemWidth/ 2 + 1);
                 transform: rotate(180deg);
             }
+        }
+    }
+
+    &-summary-container {
+        clear: both;
+        display: none;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+
+    &-help-container {
+        clear: both;
+
+        .card-body {
+            font-size: 13px;
         }
     }
 }

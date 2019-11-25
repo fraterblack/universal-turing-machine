@@ -1,15 +1,12 @@
 import './styles/app.scss';
 import 'bootstrap';
 
-import { ReservedChar } from './common';
+import { ReservedChar, UtmIteration } from './common';
 import { Handler } from './handler';
 import { Interpreter } from './interpreter';
 import { Validator } from './validator';
 
 export class Utm {
-    id: number;
-    name: string;
-
     private interpreter: Interpreter;
     private handler: Handler;
     private validator: Validator;
@@ -17,18 +14,24 @@ export class Utm {
     private settingsEditor = document.getElementById('settingsEditor');
     private initialSymbolEditor = document.getElementById('initialSymbol');
     private stopSymbolEditor = document.getElementById('stopSymbol');
-    private initialStateEditor = document.getElementById('initialState');
+    private initialSettingEditor = document.getElementById('initialSetting');
     private delayEditor = document.getElementById('delay');
     private btnImport = document.getElementById('btnImport');
     private btnStart = document.getElementById('btnStart');
-    private btnPause = document.getElementById('btnPause');
+    private btnStop = document.getElementById('btnStop');
     private tape = document.getElementById('tape');
+
+    private summary = document.getElementById('summary');
+    private summaryState = document.getElementById('summaryState');
+    private summaryTotalStates = document.getElementById('summaryTotalStates');
+    private summaryTotalIterations = document.getElementById('summaryTotalIterations');
 
     private initialSymbol = '>';
     private stopSymbol = '!';
     private settings: string;
-    private initialState: string;
+    private initialSetting: string;
     private delay = 200;
+    private activeTimer: any;
 
     constructor() {
         this.handler = new Handler();
@@ -39,19 +42,19 @@ export class Utm {
         this.settingsEditor.textContent = this.settings = `q0, ${this.initialSymbol}`;
         this.initialSymbolEditor.setAttribute('value', this.initialSymbol);
         this.stopSymbolEditor.setAttribute('value', this.stopSymbol);
-        this.initialState = this.initialSymbol;
-        this.initialStateEditor.setAttribute('value', this.initialSymbol);
+        this.initialSetting = this.initialSymbol;
+        this.initialSettingEditor.setAttribute('value', this.initialSymbol);
         this.delayEditor.setAttribute('placeholder', `${this.delay} ms`);
 
         // Set event listeners
         this.settingsEditor.addEventListener('change', this.onSettingsChange.bind(this));
         this.initialSymbolEditor.addEventListener('change', this.onInitialSymbolChange.bind(this));
         this.stopSymbolEditor.addEventListener('change', this.onStopSymbolChange.bind(this));
-        this.initialStateEditor.addEventListener('change', this.onInitialStateChange.bind(this));
+        this.initialSettingEditor.addEventListener('change', this.onInitialSettingChange.bind(this));
         this.delayEditor.addEventListener('change', this.onDelayChange.bind(this));
         this.btnImport.addEventListener('click', this.onBtnImportClick.bind(this));
         this.btnStart.addEventListener('click', this.onBtnStartClick.bind(this));
-        this.btnPause.addEventListener('click', this.onBtnPauseClick.bind(this));
+        this.btnStop.addEventListener('click', this.onBtnStopClick.bind(this));
 
         // Help Text
         document.getElementById('settingsEditorHelpText').innerHTML = `Caracteres reservados:<br>
@@ -59,7 +62,7 @@ export class Utm {
         Mover Direita: ${ReservedChar.LEFT_DIRECTION}<br>          
         Mover Esquerda: ${ReservedChar.RIGHT_DIRECTION}`;
         
-        this.populateTape(this.initialState);
+        this.populateTape(this.initialSetting);
     }
 
     private onSettingsChange(event: Event): void {
@@ -111,8 +114,10 @@ export class Utm {
         }
     }
 
-    private onInitialStateChange(event: Event): void {
+    private onInitialSettingChange(event: Event): void {
         this.populateTape(event.currentTarget['value'] || '');
+
+        this.initialSetting = event.currentTarget['value'];
     }
 
     private onDelayChange(event: Event): void {
@@ -138,33 +143,99 @@ export class Utm {
 
     private onBtnStartClick(event: Event): void {
         try {
-            // Validate if state is valid
+            // Validations
             this.validator.validateSettings(this.settings, this.initialSymbol, this.stopSymbol);
+            this.validator.validateInitialSetting(this.initialSetting, this.initialSymbol);
+
+            // Start interpreter
+            const executor = this.interpreter.execute(this.settings, this.initialSetting, this.initialSymbol, this.stopSymbol);
+        
+            this.runQueue.call(this, executor, this.delay);
+
+            this.disableScreen();
+
+            this.summary.style.display = 'block';
         } catch(err) {
             this.bubbleError(err);
         }
     }
 
-    private onBtnPauseClick(event: Event): void {
-        
+    private runQueue(executor: any, delay: number): void {
+        try {
+            if (executor.hasNext()) {
+                const iteration: UtmIteration = executor.next();
+    
+                this.summaryState.innerText = iteration.currentState;
+                this.summaryTotalStates.innerText = iteration.totalStates.toString();
+                this.summaryTotalIterations.innerText = iteration.totalIterations.toString();
+    
+                this.populateTape(iteration.tape.join(''), iteration.tapePosition);
+                
+                this.activeTimer = setTimeout(this.runQueue.bind(this, executor, delay), delay);
+            } else {
+                alert('Concluído!');
+    
+                this.enableScreen();
+            }
+        } catch(err) {
+            this.enableScreen();
+            
+            this.bubbleError(err);
+        }
     }
 
-    private populateTape(initialState: string) {
-        const symbols = initialState.split('');
+    private onBtnStopClick(event: Event): void {
+        if (this.activeTimer) {
+            clearTimeout(this.activeTimer);
+        }
+    }
+
+    private populateTape(initialSetting: string, activeIndex?: number) {
+        const symbols = initialSetting.split('');
 
         this.tape.innerHTML = '';
 
-        symbols.forEach(x => {
-            const li = document.createElement("li");
-            li.appendChild(document.createTextNode(x));
-            this.tape.appendChild(li);
+        let liElements = '';
+
+        symbols.forEach((x, i) => {
+            const liClass = activeIndex != undefined && activeIndex === i ? 'utm-active' : '';
+
+            liElements += `<li class="${liClass}">${x === ReservedChar.WHITE_SPACE ? ' ' : x}</li>`;
         });
+
+        this.tape.innerHTML = liElements;
     }
 
     private bubbleError(message: string) {
         setTimeout(() => {
             alert(message);
         }, 150);
+    }
+
+    private disableScreen() {
+        this.btnStop.removeAttribute('disabled');
+
+        this.btnStart.setAttribute('disabled', 'true');
+        this.btnImport.setAttribute('disabled', 'true');
+
+        this.initialSymbolEditor.setAttribute('readonly', 'true');
+        this.stopSymbolEditor.setAttribute('readonly', 'true');
+        this.initialSettingEditor.setAttribute('readonly', 'true');
+        this.settingsEditor.setAttribute('readonly', 'true');
+        this.delayEditor.setAttribute('readonly', 'true');
+    }
+
+    private enableScreen() {
+        this.btnStop.setAttribute('disabled', 'true');
+
+        this.btnStart.removeAttribute('disabled');
+        this.btnImport.removeAttribute('disabled');
+
+        this.initialSymbolEditor.removeAttribute('readonly')
+        this.stopSymbolEditor.removeAttribute('readonly');
+        this.initialSettingEditor.removeAttribute('readonly');
+        this.settingsEditor.removeAttribute('readonly');
+        this.delayEditor.removeAttribute('readonly');
     }
 
     private openFile(func: any) {

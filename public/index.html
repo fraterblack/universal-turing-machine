@@ -44,10 +44,10 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col">
-                                <label for="initialState">Configuração Inicial</label>
+                                <label for="initialSetting">Configuração Inicial</label>
                                 <input class="form-control utm-initial-state"
                                     type="text"
-                                    id="initialState"></input>
+                                    id="initialSetting"></input>
                             </div>
                         </div>
                     </div>
@@ -60,13 +60,55 @@
                         <div class="row">
                             <div class="col-auto">
                                 <button id="btnStart" type="button" class="btn btn-primary">Iniciar</button>
-                                <button id="btnPause" type="button" class="btn btn-secondary">Pausar</button>
+                                <button id="btnStop" type="button" class="btn btn-secondary" disabled>Parar</button>
                             </div>
                             <div class="col-auto">
                                 <label for="delay" class="utm-delay-label">Delay</label>
                             </div>
                             <div class="col-auto">
                                 <input id="delay" type="number" class="form-control form-control-sm utm-delay">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="summary" class="form-group utm-summary-container">
+                        <strong>Estado Atual: <span id="summaryState"></span></strong><br>
+                        Total Estados: <span id="summaryTotalStates"></span><br>
+                        Iterações: <span id="summaryTotalIterations"></span>
+                    </div>
+
+                    <div class="form-group utm-help-container">
+                        <p>
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i> Ajuda
+                        </button>
+                        </p>
+                        <div class="collapse" id="collapseExample">
+                            <div class="card card-body">
+                                <p>
+                                    Cada linha na tabela, representa as configurações para um estado.<br>
+                                    Use vírgulas para separar cada um dos elementos.
+                                </p>
+                                <p>
+                                    As seguintes configurações são esperadas nas posições:<br>
+                                    1º Estado da máquina<br>
+                                    2º Símbolo da fita<br>
+                                    3º Operação de escrita<br>
+                                    4º Movimento da fita<br>
+                                    5º Estado final
+                                </p>
+                                <p>
+                                    Use espaço vazio ou <b>_</b> para definir espaço em branco. <strong>E</strong> para sinalizar o movimento a esquerda e <strong>D</strong> para sinalizar o movimento a direita.<br>
+                                    <em>Ex: q1, a, b, D, q2</em>
+                                </p>
+                                <p>
+                                    O estado inicial e o śimbolo inicial devem obrigatoriamente serem definidos na primeira linha de configuração.<br>
+                                    <em>Ex: q0, >, >, D, q1 (Considerando > como símbolo inicial)</em>
+                                </p>
+                                <p>
+                                    Ao menos uma linha de configuração deve conter um símbolo de parada. É esperado que símbolo de parada esteja na 4 posição.<br>
+                                    <em>Ex: q1, a, a, ! (Considerando ! como símbolo de parada)</em><br>
+                                </p>
                             </div>
                         </div>
                     </div>

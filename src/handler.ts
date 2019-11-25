@@ -46,12 +46,12 @@ export class Handler {
         const mappedLines = lines.map(x => {
             const settingItems = this.getSettingItems(x);
 
-           return settingItems.map((y, i) => {
+            return settingItems.map((y, i) => {
                 // Skip position 0, equivalent to state identifier
                 if (i !== 0) {
                     y = y.replace(targetSymbol, symbol);
                 }
-                
+
                 return y;
             }).join(', ');
         });
