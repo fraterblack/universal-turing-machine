@@ -2,12 +2,16 @@
 
 ### Projeto criado para a disciplina Teoria da Computação do Curso de Ciência da Computação Unesc
 
-**Autores:** Gilberto Topanotti e Edvaldo da Rosa
+**Autores:** Edvaldo da Rosa e Gilberto Topanotti
 
-Os arquivos disponíveis para produção encontram-se no diretório _/public_
+Para utilizar a aplicação, basta abrir o arquivo _/public/index.html_
 
-Para desenvolvimento use o comando:
+Para instalar instale as dependências 
+> `npm install`
+
+Para executar o servidor de desenvolvimento use o comando:
 > `npm start`
 
 Para fazer o build use o comando:
-> `npm run build`
+> `npm run-script build`
+

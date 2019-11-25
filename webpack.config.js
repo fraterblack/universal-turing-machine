@@ -2,6 +2,7 @@ const path = require('path');
 
 module.exports = {
     entry: path.join(__dirname, '/src/app.ts'),
+    mode: 'production',
     output: {
         filename: 'app.js',
         path: path.join(__dirname, 'public')
