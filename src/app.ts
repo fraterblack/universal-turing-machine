@@ -47,7 +47,6 @@ export class Utm {
         this.initialSetting = this.initialSymbol;
         this.initialSettingEditor.setAttribute('value', this.initialSymbol);
         this.delayEditor.setAttribute('placeholder', `${this.delay} ms`);
-        this.autoOrganize.setAttribute('checked', 'true');
 
         // Set event listeners
         this.settingsEditor.addEventListener('change', this.onSettingsChange.bind(this));
@@ -87,12 +86,7 @@ export class Utm {
     }
     
     private onSettingsChange(event: Event): void {
-        if (this.autoOrganize['checked']) {
-            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(event.currentTarget['value']);
-        } else {
-            this.settings = this.handler.sanitizeSettings(event.currentTarget['value']);
-            this.settingsEditor['value'] = event.currentTarget['value'];
-        }
+        this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(event.currentTarget['value'], this.autoOrganize['checked']);
     }
 
     private onInitialSymbolChange(event: Event): void {
@@ -138,7 +132,7 @@ export class Utm {
     }
 
     private onDelayChange(event: Event): void {
-        this.delay = event.currentTarget['value'] || 200;
+        this.delay = event.currentTarget['value'] || 0;
     }
 
     private onAutoOrganizeChange(event: Event): void {
@@ -156,11 +150,13 @@ export class Utm {
             // Validate if state is valid
             this.validator.validateSettings(content, this.initialSymbol, this.stopSymbol);
 
-            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(content);
+            this.settingsEditor.removeAttribute('title');
+            this.settingsEditor.classList.remove('is-invalid');
         } catch(err) {
-            this.settings = this.settingsEditor['value'] = content;
-
             this.bubbleError(err);
+            
+        } finally {
+            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(content, this.autoOrganize['checked']);
         }
     }
 
@@ -193,17 +189,25 @@ export class Utm {
                 this.summaryTotalIterations.innerText = iteration.totalIterations.toString();
     
                 this.populateTape(iteration.tape.join(''), iteration.tapePosition);
-                
-                this.activeTimer = setTimeout(this.runQueue.bind(this, executor, delay), delay);
+
+                if (this.delay > 0 || iteration.totalIterations === 1 || iteration.totalIterations % 100 === 0) {
+                    this.activeTimer = setTimeout(this.runQueue.bind(this, executor, delay), delay);
+                } else {
+                    this.runQueue.call(this, executor, delay);
+                }
             } else {
-                setTimeout(() => alert('Concluído!'), 500);
-    
-                this.enableScreen();
+                setTimeout(() => {
+                    this.enableScreen();
+
+                    alert('Concluído!');
+                }, 500);
             }
         } catch(err) {
-            this.enableScreen();
+            setTimeout(() => {
+                this.enableScreen();
             
-            this.bubbleError(err);
+                this.bubbleError(err);
+            }, 500);
         }
     }
 

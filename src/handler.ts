@@ -14,12 +14,12 @@ export class Handler {
         return items;
     }
 
-    public sanitizeSettings(settings: string): string {
+    public sanitizeSettings(settings: string, sort?: boolean): string {
         const settingLines = this.getSettingLines(settings);
         
         let initialState;
 
-        return settingLines
+        const sanitizedLines = settingLines
             .filter(x => {
                 const settingItems = this.getSettingItems(x);
 
@@ -43,8 +43,11 @@ export class Handler {
 
                     return y;
                 }).join(', ');
-            })
-            .sort((a, b) => {
+            });
+
+        // Sort lines
+        if (sort) {
+            return sanitizedLines.sort((a, b) => {
                 const itemsA = this.getSettingItems(a);
                 const itemsB = this.getSettingItems(b);
 
@@ -54,8 +57,10 @@ export class Handler {
                 if (b > a && itemsA[0] !== initialState) return -1;
               
                 return 0;
-            })
-            .join('\n');
+            }).join('\n');
+        }
+
+        return sanitizedLines.join('\n');
     }
 
     public changeSymbol(settings: string, targetSymbol: string, symbol: string): string {
