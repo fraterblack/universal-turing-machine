@@ -16,6 +16,8 @@ export class Handler {
 
     public sanitizeSettings(settings: string): string {
         const settingLines = this.getSettingLines(settings);
+        
+        let initialState;
 
         return settingLines
             .filter(x => {
@@ -30,6 +32,11 @@ export class Handler {
             })
             .map((x, i) => {
                 return this.getSettingItems(x).map(y => {
+                    // Get initial stated
+                    if (i === 0 && !initialState) {
+                        initialState = y;
+                    }
+
                     if (y === '' || y === undefined) {
                         y = ReservedChar.WHITE_SPACE;
                     }
@@ -37,7 +44,18 @@ export class Handler {
                     return y;
                 }).join(', ');
             })
-            .join('\n')
+            .sort((a, b) => {
+                const itemsA = this.getSettingItems(a);
+                const itemsB = this.getSettingItems(b);
+
+                // Sort maintaining initial state in the top
+                if (a > b && itemsA[0] === initialState) return -1;
+                if (a > b || itemsB[0] === initialState) return 1;
+                if (b > a && itemsA[0] !== initialState) return -1;
+              
+                return 0;
+            })
+            .join('\n');
     }
 
     public changeSymbol(settings: string, targetSymbol: string, symbol: string): string {

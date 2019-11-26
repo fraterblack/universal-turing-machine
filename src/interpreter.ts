@@ -67,7 +67,7 @@ export class Interpreter {
                 });
 
                 if (!activeState) {
-                    throw `Não foi existe uma configuração para o símbolo "${currentSymbol}" quando no estado "${currentState}"`;
+                    throw `Não existe uma configuração para o símbolo "${currentSymbol}" quando no estado "${currentState}"`;
                 }
 
                 const activeStateItems = this.handler.getSettingItems(activeState);

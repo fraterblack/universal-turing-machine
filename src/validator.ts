@@ -12,6 +12,8 @@ export class Validator {
         const settingLines = this.handler.getSettingLines(settings);
         
         let foundStopSymbol = false;
+        let foundInitialSymbol = false;
+
         settingLines.forEach((x, i) => {
             const settingItems = this.handler.getSettingItems(x);
             let expectedSymbolElements = 5;
@@ -28,21 +30,21 @@ export class Validator {
 
             // Validate total of symbols
             if (settingItems.length < expectedSymbolElements) {
-                throw `A linha ${i+1} possui menos símbolos que o esperado (${expectedSymbolElements})`
+                throw `A linha ${i+1} possui menos símbolos que o esperado (${expectedSymbolElements}). Consulte nossa ajuda.`
             }
 
             if (settingItems.length > 5) {
-                throw `A linha ${i+1} possui mais símbolos que o esperado (${expectedSymbolElements})`
+                throw `A linha ${i+1} possui mais símbolos que o esperado (${expectedSymbolElements}). Consulte nossa ajuda.`
             }
 
             // Validate if the direction symbol is valid
             if (settingItems[3] !== stopSymbol && settingItems[3] !== ReservedChar.LEFT_DIRECTION && settingItems[3] !== ReservedChar.RIGHT_DIRECTION) {
-                throw `A linha ${i+1} não possui um símbolo de mudança de direção válido. É esperado E ou D` 
+                throw `A linha ${i+1} não possui um símbolo de mudança de direção válido. É esperado E ou D. Consulte nossa ajuda.` 
             }
 
             // Validate initial symbol
-            if (i === 0 && settingItems[1] !== initialSymbol) {
-                throw `Você precisa obrigatoriamente setar o símbolo inicial na primeira linha. É esperado: ${settingItems[0]}, ${initialSymbol}, ${settingItems[2]}, ${settingItems[3]}, ${settingItems[4]}`
+            if (settingItems[1] === initialSymbol) {
+                foundInitialSymbol = true;
             }
 
             // Validate stop symbol
@@ -51,8 +53,12 @@ export class Validator {
             }
         });
 
+        if (!foundInitialSymbol) {
+            throw `Você precisa obrigatoriamente setar o símbolo inicial na primeira linha.`// É esperado: ${settingItems[0]}, ${initialSymbol}, ${settingItems[2]}, ${settingItems[3]}, ${settingItems[4]}. Consulte nossa ajuda.`
+        }
+
         if (!foundStopSymbol) {
-            throw `Você precisa obrigatoriamente inserir o símbolo de parada em alguma linha. Insira na quarta posição`
+            throw `Você deve inserir o símbolo de parada em ao menos uma configuração. Consulte nossa ajuda.`
         }
 
         return true;

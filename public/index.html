@@ -37,7 +37,8 @@
                         <textarea class="form-control utm-states-table-editor"
                             id="settingsEditor"
                             rows="3"></textarea>
-                            <small id="settingsEditorHelpText" class="form-text text-muted"></small>
+                        <label class="utm-auto-organize"><input id="autoOrganize" value="true" type="checkbox"> Auto organizar</label>
+                        <small id="settingsEditorHelpText" class="form-text utm-help-text text-muted"></small>
                     </div>
                 </div>
                 <div class="col col-lg-9 col-md-8 col-xs-6">
@@ -86,27 +87,30 @@
                         <div class="collapse" id="collapseExample">
                             <div class="card card-body">
                                 <p>
-                                    Cada linha na tabela, representa as configurações para um estado.<br>
-                                    Use vírgulas para separar cada um dos elementos.
+                                    Cada linha na tabela, representa as configurações esperadas para um estado.<br>
+                                    <b>Use vírgulas</b> para separar cada um dos elementos.
                                 </p>
                                 <p>
                                     As seguintes configurações são esperadas nas posições:<br>
-                                    1º Estado da máquina<br>
-                                    2º Símbolo da fita<br>
-                                    3º Operação de escrita<br>
-                                    4º Movimento da fita<br>
-                                    5º Estado final
+                                    <b>1º</b> Estado da máquina<br>
+                                    <b>2º</b> Símbolo da fita<br>
+                                    <b>3º</b> Operação de escrita<br>
+                                    <b>4º</b> Movimento da fita<br>
+                                    <b>5º</b> Estado final
                                 </p>
                                 <p>
-                                    Use espaço vazio ou <b>_</b> para definir espaço em branco. <strong>E</strong> para sinalizar o movimento a esquerda e <strong>D</strong> para sinalizar o movimento a direita.<br>
+                                    Use espaço <b>vazio</b> ou <b>_</b> para definir espaço em branco. <b>E</b> para sinalizar o movimento a esquerda e <b>D</b> para sinalizar o movimento a direita.<br>
                                     <em>Ex: q1, a, b, D, q2</em>
                                 </p>
                                 <p>
-                                    O estado inicial e o śimbolo inicial devem obrigatoriamente serem definidos na primeira linha de configuração.<br>
-                                    <em>Ex: q0, >, >, D, q1 (Considerando > como símbolo inicial)</em>
+                                    Como <b>estado inicial da máquina</b> será considerado o valor informado na primeira linha da tabela de estados.
                                 </p>
                                 <p>
-                                    Ao menos uma linha de configuração deve conter um símbolo de parada. É esperado que símbolo de parada esteja na 4 posição.<br>
+                                    O <b>símbolo inicial</b> deve obrigatoriamente estar definido em alguma configuração do estado inicial da máquina.<br>
+                                    <em>Ex: q0, >, >, D, q1 (Considerando que q0 é o estado inicial e > como símbolo inicial)</em>
+                                </p>
+                                <p>
+                                    Ao menos uma linha de configuração deve conter um <b>símbolo de parada</b>. É esperado que símbolo de parada esteja na 4 posição.<br>
                                     <em>Ex: q1, a, a, ! (Considerando ! como símbolo de parada)</em><br>
                                 </p>
                             </div>

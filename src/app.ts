@@ -26,6 +26,8 @@ export class Utm {
     private summaryTotalStates = document.getElementById('summaryTotalStates');
     private summaryTotalIterations = document.getElementById('summaryTotalIterations');
 
+    private autoOrganize = document.getElementById('autoOrganize');
+
     private initialSymbol = '>';
     private stopSymbol = '!';
     private settings: string;
@@ -45,9 +47,12 @@ export class Utm {
         this.initialSetting = this.initialSymbol;
         this.initialSettingEditor.setAttribute('value', this.initialSymbol);
         this.delayEditor.setAttribute('placeholder', `${this.delay} ms`);
+        this.autoOrganize.setAttribute('checked', 'true');
 
         // Set event listeners
         this.settingsEditor.addEventListener('change', this.onSettingsChange.bind(this));
+        this.settingsEditor.addEventListener('focus', this.onSettingsFocus.bind(this));
+        this.settingsEditor.addEventListener('blur', this.onSettingsBlur.bind(this));
         this.initialSymbolEditor.addEventListener('change', this.onInitialSymbolChange.bind(this));
         this.stopSymbolEditor.addEventListener('change', this.onStopSymbolChange.bind(this));
         this.initialSettingEditor.addEventListener('change', this.onInitialSettingChange.bind(this));
@@ -55,26 +60,38 @@ export class Utm {
         this.btnImport.addEventListener('click', this.onBtnImportClick.bind(this));
         this.btnStart.addEventListener('click', this.onBtnStartClick.bind(this));
         this.btnStop.addEventListener('click', this.onBtnStopClick.bind(this));
+        this.autoOrganize.addEventListener('change', this.onAutoOrganizeChange.bind(this));
 
         // Help Text
         document.getElementById('settingsEditorHelpText').innerHTML = `Caracteres reservados:<br>
-        Espaço em Branco: ${ReservedChar.WHITE_SPACE}<br>               
-        Mover Direita: ${ReservedChar.LEFT_DIRECTION}<br>          
-        Mover Esquerda: ${ReservedChar.RIGHT_DIRECTION}`;
+        <strong>Espaço em Branco:</strong> ${ReservedChar.WHITE_SPACE}<br>               
+        <strong>Mover Direita:</strong> ${ReservedChar.LEFT_DIRECTION}<br>          
+        <strong>Mover Esquerda:</strong> ${ReservedChar.RIGHT_DIRECTION}`;
         
         this.populateTape(this.initialSetting);
     }
 
-    private onSettingsChange(event: Event): void {
+    private onSettingsFocus(event: Event): void {
+        this.settingsEditor.removeAttribute('title');
+        this.settingsEditor.classList.remove('is-invalid');
+    }
+
+    private onSettingsBlur(event: Event): void {
         try {
             // Validate if state is valid
             this.validator.validateSettings(event.currentTarget['value'], this.initialSymbol, this.stopSymbol);
-
-            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(event.currentTarget['value']);
         } catch(err) {
-            this.settings = event.currentTarget['value'];
-
-            this.bubbleError(err);
+            this.settingsEditor.setAttribute('title', err);
+            this.settingsEditor.classList.add('is-invalid');
+        }
+    }
+    
+    private onSettingsChange(event: Event): void {
+        if (this.autoOrganize['checked']) {
+            this.settings = this.settingsEditor['value'] = this.handler.sanitizeSettings(event.currentTarget['value']);
+        } else {
+            this.settings = this.handler.sanitizeSettings(event.currentTarget['value']);
+            this.settingsEditor['value'] = event.currentTarget['value'];
         }
     }
 
@@ -122,6 +139,12 @@ export class Utm {
 
     private onDelayChange(event: Event): void {
         this.delay = event.currentTarget['value'] || 200;
+    }
+
+    private onAutoOrganizeChange(event: Event): void {
+        if (this.autoOrganize['checked']) {
+            this.settingsEditor['value'] = this.settings;
+        }
     }
 
     private onBtnImportClick(event: Event): void {
@@ -173,7 +196,7 @@ export class Utm {
                 
                 this.activeTimer = setTimeout(this.runQueue.bind(this, executor, delay), delay);
             } else {
-                alert('Concluído!');
+                setTimeout(() => alert('Concluído!'), 500);
     
                 this.enableScreen();
             }
@@ -188,6 +211,10 @@ export class Utm {
         if (this.activeTimer) {
             clearTimeout(this.activeTimer);
         }
+
+        alert('Interrompido pelo usuário!');
+
+        this.enableScreen();
     }
 
     private populateTape(initialSetting: string, activeIndex?: number) {

@@ -29,7 +29,9 @@ body {
     }
 
     &-states-table-editor {
-        min-height: calc(100vh - 244px);
+        padding-bottom: 30px;
+        min-height: calc(100vh - 248px);
+        font-size: 14px;
     }
 
     &-initial-state {
@@ -104,6 +106,24 @@ body {
         display: none;
         margin-top: 20px;
         font-size: 14px;
+    }
+
+    &-help-text {
+        margin-top: -24px;
+    }
+
+    &-auto-organize {
+        position: relative;
+        top: -26px;
+        font-size: 12px;
+        left: 1px;
+        padding: 3px 6px;
+        background: #fff;
+        border-radius: .25rem;
+
+        input {
+            vertical-align: -2px;
+        }
     }
 
     &-help-container {
