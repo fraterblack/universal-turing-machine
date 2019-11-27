@@ -15,3 +15,11 @@ Para executar o servidor de desenvolvimento use o comando:
 Para fazer o build use o comando:
 > `npm run-script build`
 
+## Arquivos Exemplo
+Alguns arquivos de exemplo para importação estão disponíveis no diretório  _/demos_
+
+Todos os demos levam em consideração asterísticos e espaços em branco como configuração inicial.
+
+Por exemplo, para a demo de multiplicação, é esperado a seguinte configuração inicial:
+
+> `>**** **`

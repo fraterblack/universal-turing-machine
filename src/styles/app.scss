@@ -46,7 +46,9 @@ body {
     }
 
     &-tape-container {
-        margin-top: 50px;
+        clear: both;
+        float: left;
+        margin: 20px 0;
     }
 
     &-delay {

@@ -37,6 +37,15 @@ export class Validator {
                 throw `A linha ${i+1} possui mais símbolos que o esperado (${expectedSymbolElements}). Consulte nossa ajuda.`
             }
 
+            // Validate symbols size
+            if (settingItems[1].length > 1) {
+                throw `O símbolo "${settingItems[1]}" na linha ${i+1} possui mais de um caracter.`
+            }
+
+            if (settingItems[2].length > 1) {
+                throw `O símbolo "${settingItems[2]}" na linha ${i+1} possui mais de um caracter.`
+            }
+
             // Validate if the direction symbol is valid
             if (settingItems[3] !== stopSymbol && settingItems[3] !== ReservedChar.LEFT_DIRECTION && settingItems[3] !== ReservedChar.RIGHT_DIRECTION) {
                 throw `A linha ${i+1} não possui um símbolo de mudança de direção válido. É esperado E ou D. Consulte nossa ajuda.` 
